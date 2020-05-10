@@ -1,8 +1,8 @@
 package org.hanrw.akka.seckill.actor.sku
 
 import akka.actor.{Actor, ActorLogging, Props}
-import org.hanrw.akka.seckill.actor.message.SecKillSuccess
-import org.hanrw.akka.seckill.actor.request.SecKillRequest
+import org.hanrw.akka.seckill.actor.message.{SecKillFail, SecKillSuccess}
+import org.hanrw.akka.seckill.actor.request.{SecKillCheckStockRequest, SecKillSkuNotAvailableRequest}
 
 /**
  * 用于创建sku对应的actor
@@ -41,10 +41,17 @@ class SkuActorFactory(skuId: String, amountOfSku: Int) extends Actor with ActorL
   override def receive: Receive = updateAmountOfSku(amountOfSku)
 
   private def updateAmountOfSku(amountOfSku: Int): Receive = {
-    case _: SecKillSuccess if amountOfSku > 0 =>
-      log.info(s"商品被抢购,库存还剩$amountOfSku")
+    case SecKillSuccess(userId, sku) if amountOfSku > 0 =>
+      log.info(s"商品被成功抢购,库存还剩${amountOfSku - 1}")
       context.become(updateAmountOfSku(amountOfSku - 1))
-    case _: SecKillRequest =>
-      log.info(s"商品已经被抢购完,库存还剩$amountOfSku,${System.currentTimeMillis()}")
+      self ! SecKillCheckStockRequest(sku.skuId)
+    case _: SecKillSkuNotAvailableRequest =>
+      log.info(s"该商品已经被抢购完")
+    case _: SecKillCheckStockRequest =>
+      log.info(s"该商品库存还剩$amountOfSku,${System.currentTimeMillis()}")
+    case SecKillFail =>
+      log.info(s"该商品已经被抢购完")
+
   }
 }
+

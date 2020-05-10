@@ -11,4 +11,8 @@ trait Request
  **/
 
 case class SecKillRequest(userId: Int, skuId: String) extends Request
+case class SecKillSkuNotAvailableRequest(userId: Int, skuId: String) extends Request
+
+case class SecKillOutOfStockRequest(skuId: String) extends Request
+case class SecKillCheckStockRequest(skuId: String) extends Request
 

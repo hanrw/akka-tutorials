@@ -12,8 +12,8 @@ import org.hanrw.akka.seckill.actor.sku.SkuActorFactory
  */
 object SecKillApplication {
   def main(args: Array[String]): Unit = {
-    val amountOfSku = 1000
-    val users = 1000000
+    val amountOfSku = 1
+    val users = 2
     val skuId = UUID.randomUUID().toString
     val system = ActorSystem("SecKill", ConfigFactory.load())
     system.actorOf(Props(new SkuActorFactory(skuId, amountOfSku)), "skus")

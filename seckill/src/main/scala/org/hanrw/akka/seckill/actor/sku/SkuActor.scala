@@ -2,7 +2,7 @@ package org.hanrw.akka.seckill.actor.sku
 
 import akka.actor.{Actor, ActorLogging}
 import org.hanrw.akka.seckill.actor.message.{SecKillFail, SecKillSuccess}
-import org.hanrw.akka.seckill.actor.request.SecKillRequest
+import org.hanrw.akka.seckill.actor.request.{SecKillRequest, SecKillSkuNotAvailableRequest}
 
 /**
  * @author hanrw
@@ -32,9 +32,9 @@ class SkuActor(skuId: String) extends Actor with ActorLogging {
    */
   private def initReceive: Receive = {
     case SecKillRequest(userId, skuId) =>
-      //      log.info("开始抢购")
+      log.info(s"用户id:$userId 开始抢购")
       context.become(secKillingReceive)
-      self ! SecKillSuccess(userId, IPhone12(skuId))
+      self ! SecKillSuccess(userId, Sku(skuId))
   }
 
   /**
@@ -44,7 +44,8 @@ class SkuActor(skuId: String) extends Actor with ActorLogging {
    */
   private def secKillingReceive: Receive = {
     case _: SecKillRequest =>
-    //     log.info("正在抢购中,请等待")
+      //         log.info("正在抢购中,请等待")
+      context.parent ! SecKillFail
     case secKillSuccess: SecKillSuccess =>
       context.become(seckilledReceive)
       self ! secKillSuccess
@@ -62,9 +63,10 @@ class SkuActor(skuId: String) extends Actor with ActorLogging {
       context.parent ! secKillSuccess
     // 抢购成功后停止当前actor
     //      context.stop(self)
-    case secKillRequest: SecKillRequest =>
-      context.parent ! secKillRequest
-    //      log.warning(s"商品已经被抢购 $otherMessage")
+    case SecKillRequest(userId, skuId) => //已经被抢购到的商品,如果继续收到SecKillRequest,说明商品已经被抢购完
+      log.warning(s"商品已被其他用户抢购$skuId")
+      context.parent ! SecKillSkuNotAvailableRequest(userId, skuId)
+
   }
 
 }
