@@ -24,13 +24,10 @@ class SkuActor(skuId: String) extends Actor with ActorLogging {
     //    log.info("init sku stock")
   }
 
-
-  override def receive: Receive = initReceive
-
   /**
    * 商品刚上架,初始化状态
    */
-  private def initReceive: Receive = {
+  override def receive: Receive = {
     case SecKillRequest(userId, skuId) =>
       log.info(s"用户id:$userId 开始抢购")
       context.become(secKillingReceive)
