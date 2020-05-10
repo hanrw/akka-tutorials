@@ -21,7 +21,7 @@ class SkuActor(skuId: String) extends Actor with ActorLogging {
    * @return void
    **/
   override def preStart(): Unit = {
-    log.info("init sku stock")
+    //    log.info("init sku stock")
   }
 
 
@@ -32,7 +32,7 @@ class SkuActor(skuId: String) extends Actor with ActorLogging {
    */
   private def initReceive: Receive = {
     case SecKillRequest(userId, skuId) =>
-      log.info("开始抢购")
+      //      log.info("开始抢购")
       context.become(secKillingReceive)
       self ! SecKillSuccess(userId, IPhone12(skuId))
   }
@@ -57,13 +57,14 @@ class SkuActor(skuId: String) extends Actor with ActorLogging {
    */
   private def seckilledReceive: Receive = {
     case secKillSuccess@SecKillSuccess(userId, sku) =>
-      log.info(s"抢购成功,userId id $userId")
+      //      log.info(s"抢购成功,userId id $userId")
       // 通过parent更新库存
       context.parent ! secKillSuccess
-      // 抢购成功后停止当前actor
-      context.stop(self)
-    case otherMessage =>
-      log.warning(s"商品已经被抢购 $otherMessage")
+    // 抢购成功后停止当前actor
+    //      context.stop(self)
+    case secKillRequest: SecKillRequest =>
+      context.parent ! secKillRequest
+    //      log.warning(s"商品已经被抢购 $otherMessage")
   }
 
 }

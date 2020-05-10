@@ -2,6 +2,7 @@ package org.hanrw.akka.seckill.actor.sku
 
 import akka.actor.{Actor, ActorLogging, Props}
 import org.hanrw.akka.seckill.actor.message.SecKillSuccess
+import org.hanrw.akka.seckill.actor.request.SecKillRequest
 
 /**
  * 用于创建sku对应的actor
@@ -10,9 +11,9 @@ import org.hanrw.akka.seckill.actor.message.SecKillSuccess
  * @author hanrw
  * @date 2020/5/9 6:07 PM
  */
-class SkuActorFactory(skuId: String, numberOfSku: Int) extends Actor with ActorLogging {
+class SkuActorFactory(skuId: String, amountOfSku: Int) extends Actor with ActorLogging {
   override def preStart(): Unit = {
-    initSkus(skuId, numberOfSku)
+    initSkus(skuId, amountOfSku)
   }
 
   /**
@@ -32,18 +33,18 @@ class SkuActorFactory(skuId: String, numberOfSku: Int) extends Actor with ActorL
    **/
   private def initSkus(skuId: String, amountOfSku: Int): Unit = {
     log.info("init sku actors")
-    0 until  amountOfSku foreach {
+    0 until amountOfSku foreach {
       idx => context.actorOf(Props(new SkuActor(s"skuId:$idx")), s"sku:actor:$skuId:$idx")
     }
   }
 
-  override def receive: Receive = updateAmountOfSku(amountOfSku = -1)
+  override def receive: Receive = updateAmountOfSku(amountOfSku)
 
   private def updateAmountOfSku(amountOfSku: Int): Receive = {
-    case _: SecKillSuccess if amountOfSku > 1 =>
-      log.info(s"商品被抢购，$amountOfSku")
+    case _: SecKillSuccess if amountOfSku > 0 =>
+      log.info(s"商品被抢购,库存还剩$amountOfSku")
       context.become(updateAmountOfSku(amountOfSku - 1))
-    case _: SecKillSuccess =>
-      log.info(s"商品已经被抢购完  ${System.currentTimeMillis()}")
+    case _: SecKillRequest =>
+      log.info(s"商品已经被抢购完,库存还剩$amountOfSku,${System.currentTimeMillis()}")
   }
 }
