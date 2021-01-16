@@ -1,6 +1,7 @@
 package org.hanrw.akka.spring.mvc.controller
 
-import akka.stream.javadsl.Source
+import akka.stream.scaladsl.Source
+import org.hanrw.akka.spring.mvc.dto.User
 import org.springframework.web.bind.annotation.{RequestMapping, RestController}
 
 /**
@@ -10,5 +11,5 @@ import org.springframework.web.bind.annotation.{RequestMapping, RestController}
 @RestController
 class SampleController {
   @RequestMapping(Array("/"))
-  def index = Source.repeat("Hello world!").intersperse("\n").take(10)
+  def index = Source(List(User("user-a"), User("user-b")))
 }
